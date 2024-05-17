@@ -12,7 +12,7 @@ This project, developed by Jinhua Fan, focuses on detecting coins in images usin
 To set up the project, clone this repository and install the required Python packages:
 
 ``` bash
-git clone https://github.com/jfan200/CoinDetection.git
+git clone https://github.com/jfan200/Coin_Detection.git
 cd your-repository
 pip install matplotlib
 pip install imageio

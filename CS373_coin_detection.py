@@ -1,9 +1,10 @@
 # Built in packages
-import math
 import sys
 import cv2
+import CS373_coin_detection_extension as cs373
+from matplotlib import pyplot as plt
 
-# Matplotlib will need to be installed if it isn't already. This is the only package allowed for this base part of the 
+# Matplotlib will need to be installed if it isn't already. This is the only package allowed for this base part of the
 # assignment.
 from matplotlib import pyplot
 from matplotlib.patches import Rectangle
@@ -70,60 +71,73 @@ def createInitializedGreyscalePixelArray(image_width, image_height, initValue=0)
 ### You can add your own functions here ###
 ###########################################
 
-# Task 1 Convert to greyscale and normalize
-# Conversion from RGB to Greyscale
-def convert_RGB_to_Grayscale(pixel_array_r, pixel_array_g, pixel_array_b, image_width, image_height):
-    greyscale_pixel_array = createInitializedGreyscalePixelArray(image_width, image_height)
 
-    for row in range(image_height):
-        for col in range(image_width):
-            r = pixel_array_r[row][col]
-            g = pixel_array_g[row][col]
-            b = pixel_array_b[row][col]
+def plot_task_1(original_image, stretched_image):
+    fig, axs = pyplot.subplots(1, 2)
+    axs[0].imshow(original_image, cmap='gray')
+    axs[0].set_title('Original Image')
+    axs[0].axis('off')
+    axs[1].imshow(stretched_image, cmap='gray')
+    axs[1].set_title('Stretched Image')
+    axs[1].axis('off')
+    fig.suptitle('Convert to greyscale and normalize')
 
-            # RGB channel ratio 0.3 x red, 0.6 x green, 0.1 x blue
-            greyscale_pixel_array[row][col] = round(r * 0.3 + g * 0.6 + b * 0.1)
+def plot_task_2(scharr_x, scharr_y, abs_diff):
+    # Plot scharr_x and scharr_y mapping
+    fig, axs = pyplot.subplots(1, 3)
+    axs[0].imshow(scharr_x, cmap='gray')
+    axs[0].set_title('scharr x-direction')
+    axs[0].axis('off')
+    axs[1].imshow(scharr_y, cmap='gray')
+    axs[1].set_title('scharr y-direction')
+    axs[1].axis('off')
 
-    return greyscale_pixel_array
+    # Plot absolute different
+    axs[2].imshow(abs_diff, cmap='gray')
+    axs[2].set_title('abs different')
+    axs[2].axis('off')
+    fig.suptitle('Edge detection')
 
-# Using 5-95 percentile strategy
-def get_percentiles(pixel_array):
-    # Convert pixel_array into numpy array
-    pixel_array = np.array(pixel_array)
+def plot_task_3(blurred_image_1, blurred_image_2):
+    blurred_image_1 = np.array(blurred_image_1)
+    blurred_image_2 = np.array(blurred_image_2)
+    # apply gaussian fill
+    fig, axs = pyplot.subplots(2, 2)
+    axs[0][0].imshow(blurred_image_1, cmap='gray')
+    axs[0][0].set_title('One time')
+    axs[0][0].axis('off')
+    axs[0][1].hist(blurred_image_1.ravel(), 256, [0, 255])
+    axs[0][1].set_title('Histogram')
 
-    # Count percentiles
-    percentiles = {
-        '5th': np.percentile(pixel_array, 5),
-        '95th': np.percentile(pixel_array, 95)
-    }
+    axs[1][0].imshow(blurred_image_2, cmap='gray')
+    axs[1][0].set_title('Two times')
+    axs[1][0].axis('off')
+    axs[1][1].hist(blurred_image_2.ravel(), 256, [0, 255])
 
-    return percentiles
+    fig.suptitle('Applying Gaussian filter')
 
-def percentile_based_mapping(pixel_array, image_width, image_height):
-    contrast_stretched_pixel_array = createInitializedGreyscalePixelArray(image_width, image_height)
+def plot_task_4(blurred_image_2, binary_image):
+    fig, axs = pyplot.subplots(1, 2)
+    axs[0].imshow(blurred_image_2, cmap='gray')
+    axs[0].set_title('blurred_image_2')
+    axs[0].axis('off')
+    axs[1].imshow(binary_image, cmap='gray')
+    axs[1].set_title('binary_image')
+    axs[1].axis('off')
+    fig.suptitle('Threshold the Image')
 
-    percentiles = get_percentiles(pixel_array)
-
-    for row in range(image_height):
-        for col in range(image_width):
-            f = pixel_array[row][col]
-            g = ((f - percentiles['5th']) * 255) / (percentiles['95th'] - percentiles['5th'])
-            contrast_stretched_pixel_array[row][col] = g
-    return contrast_stretched_pixel_array
-
-
-# Task 2 Edge detection
-def scharr_filter(pixel_array, image_width, image_height, direction):
-    scharr_x = np.array([[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]])
-    scharr_y = np.array([[-3, 10, -3], [0, 0, 0], [3, 10, 3]])
-    if direction == 'x':
-        scharr_filter = scharr_x
-        return cv2.Scharr(pixel_array, cv2.CV_64F, 1, 0)
-    elif direction == 'y':
-        scharr_filter = scharr_y
-
-
-
+def polt_task_5(dilation_2, dilation_3, dilation_4):
+    fig, axs = pyplot.subplots(1, 3)
+    axs[0].imshow(dilation_2, cmap='gray')
+    axs[0].set_title('dilation_2')
+    axs[0].axis('off')
+    axs[1].imshow(dilation_3, cmap='gray')
+    axs[1].set_title('dilation_3')
+    axs[1].axis('off')
+    axs[2].imshow(dilation_4, cmap='gray')
+    axs[2].set_title('dilation_4')
+    axs[2].axis('off')
+    fig.suptitle('Erosion and Dilation')
 
 
 # This is our code skeleton that performs the coin detection.
@@ -144,18 +158,51 @@ def main(input_path, output_path):
     original_image = np.stack((px_array_r, px_array_g, px_array_b), axis=-1)
 
     # Task 1 Convert to greyscale and normalize
-    gray_scale_image = convert_RGB_to_Grayscale(px_array_r, px_array_g, px_array_b, image_width, image_height)
-    stretched_image = percentile_based_mapping(gray_scale_image, image_width, image_height)
-
-    fig, axs = pyplot.subplots(1, 2)
-    axs[0].imshow(original_image, cmap='gray')
-    axs[0].set_title('Original Image')
-    axs[1].imshow(stretched_image, cmap='gray')
-    axs[1].set_title('Stretched Image')
-    fig.suptitle('Convert to greyscale and normalize')
+    gray_scale_image = cs373.convert_RGB_to_Grayscale(px_array_r, px_array_g, px_array_b, image_width, image_height)
+    stretched_image = cs373.percentile_based_mapping(gray_scale_image, image_width, image_height)
+    plot_task_1(original_image, stretched_image)
 
     # Task 2 Edge detection
+    # Find both scharr_x and scharr_y mapping
+    scharr_x = [[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]]
+    scharr_y = [[-3, -10, -3], [0, 0, 0], [3, 10, 3]]
 
+    scharr_x = cs373.apply_3x3_filter(stretched_image, image_width, image_height,  scharr_x)
+    scharr_y = cs373.apply_3x3_filter(stretched_image, image_width, image_height,  scharr_y)
+    abs_diff = cs373.abs_diff(scharr_x, scharr_y)
+    plot_task_2(scharr_x, scharr_y, abs_diff)
+
+    # Task 3 Image blurring
+    mean_filter_5x5 = [[1/5 for i in range(5)] for j in range(5)]
+    print(mean_filter_5x5)
+    blurred_image_1 = cs373.apply_5x5_filter(abs_diff, image_width, image_height, mean_filter_5x5)
+    blurred_image_2 = cs373.apply_5x5_filter(blurred_image_1, image_width, image_height, mean_filter_5x5)
+
+
+    plot_task_3(blurred_image_1, blurred_image_2)
+
+    # Task 4 Threshold the Image
+    threshold_value = 250  # Based on the histogram
+    binary_image = cs373.custom_threshold(blurred_image_2, image_width, image_height, 50, 200)
+    plot_task_4(blurred_image_2, binary_image)
+
+    # Task 5 Erosion and Dilation
+    circular_kernel = np.array([[0, 0, 1, 0, 0],
+                                [0, 1, 1, 1, 0],
+                                [1, 1, 1, 1, 1],
+                                [0, 1, 1, 1, 0],
+                                [0, 0, 1, 0, 0]], dtype=np.uint8)
+
+    # dilation_2 = cv2.dilate(binary_image, circular_kernel, iterations=2)
+    # dilation_3 = cv2.dilate(binary_image, circular_kernel, iterations=3)
+    # dilation_4 = cv2.dilate(binary_image, circular_kernel, iterations=4)
+    # polt_task_5(dilation_2, dilation_3, dilation_4)
+
+    # Task 6 Connected Component Analysis
+    regions = cs373.computeConnectedComponentLabeling(binary_image, image_width, image_height)
+
+    # Task 7 Draw Bounding Box
+    bounding_box_list = cs373.detect_the_region(regions)
 
     ############################################
     ### Bounding box coordinates information ###
@@ -164,9 +211,6 @@ def main(input_path, output_path):
     ### bounding_box[2] = max x
     ### bounding_box[3] = max y
     ############################################
-
-    bounding_box_list = [
-        [150, 140, 200, 190]]  # This is a dummy bounding box list, please comment it out when testing your own code.
     px_array = px_array_r
 
     fig, axs = pyplot.subplots(1, 1)

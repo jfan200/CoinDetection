@@ -227,7 +227,7 @@ def dilate_image(image, image_width, image_height, kernel, iterations):
                             raise IndexError
                 output[row][col] = 0
             except IndexError:
-                output[row][col] = image[row][col]
+                output[row][col] = 255
 
     # 递归进行下一次膨胀
     return dilate_image(output, image_width, image_height, kernel, iterations - 1)
@@ -251,7 +251,7 @@ def erode_image(image, image_width, image_height, kernel, iterations):
                     for j in range(k_width):
                         if kernel[i][j] == 1 and image[row + i - kernel_center][col + j - kernel_center] == 0:
                             raise IndexError
-                output[row][col] = image[row][col]
+                output[row][col] = 255
             except IndexError:
                 output[row][col] = 0
     return erode_image(output, image_width, image_height, kernel, iterations - 1)
